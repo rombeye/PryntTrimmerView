@@ -74,7 +74,7 @@ public class AVAssetTimeSelector: UIView, UIScrollViewDelegate {
         return CMTime(value: Int64(positionTimeValue), timescale: asset.duration.timescale)
     }
 
-    func getPosition(from time: CMTime) -> CGFloat? {
+    public func getPosition(from time: CMTime) -> CGFloat? {
         guard let asset = asset else {
             return nil
         }
