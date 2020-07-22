@@ -8,7 +8,15 @@
 
 import AVFoundation
 import UIKit
-
+// Add corners to any direction in UIView
+extension UIView {
+    func roundCorners(_ corners: UIRectCorner, radius: CGFloat) {
+         let path = UIBezierPath(roundedRect: self.bounds, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+         let mask = CAShapeLayer()
+         mask.path = path.cgPath
+         self.layer.mask = mask
+    }
+}
 public protocol TrimmerViewDelegate: class {
     func didChangePositionBar(_ playerTime: CMTime)
     func positionBarStoppedMoving(_ playerTime: CMTime)
@@ -26,7 +34,7 @@ public protocol TrimmerViewDelegate: class {
     // MARK: Color Customization
 
     /// The color of the main border of the view
-    @IBInspectable public var mainColor: UIColor = UIColor.orange {
+    @IBInspectable public var mainColor: UIColor = UIColor(red: 0, green: 0.569, blue: 1, alpha: 1) {
         didSet {
             updateMainColor()
         }
@@ -53,11 +61,13 @@ public protocol TrimmerViewDelegate: class {
     // MARK: Subviews
 
     private let trimView = UIView()
-    private let leftHandleView = HandlerView()
-    private let rightHandleView = HandlerView()
+    private let leftHandleView = LeftHandlerView()
+    private let rightHandleView = RightHandlerView()
     private let positionBar = UIView()
-    private let leftHandleKnob = UIView()
-    private let rightHandleKnob = UIView()
+    private let leftHandleKnob1 = UIView()
+    private let leftHandleKnob2 = UIView()
+    private let rightHandleKnob1 = UIView()
+    private let rightHandleKnob2 = UIView()
     private let leftMaskView = UIView()
     private let rightMaskView = UIView()
 
@@ -69,7 +79,8 @@ public protocol TrimmerViewDelegate: class {
     private var rightConstraint: NSLayoutConstraint?
     private var positionConstraint: NSLayoutConstraint?
 
-    private let handleWidth: CGFloat = 15
+    public var handleWidth: CGFloat = 24
+    public var handleHeight: CGFloat = 64
 
     /// The maximum duration allowed for the trimming. Change it before setting the asset, as the asset preview
     public var maxDuration: Double = 15 {
@@ -106,8 +117,6 @@ public protocol TrimmerViewDelegate: class {
 
     private func setupTrimmerView() {
 
-        trimView.layer.borderWidth = 2.0
-        trimView.layer.cornerRadius = 2.0
         trimView.translatesAutoresizingMaskIntoConstraints = false
         trimView.isUserInteractionEnabled = false
         addSubview(trimView)
@@ -123,40 +132,56 @@ public protocol TrimmerViewDelegate: class {
     private func setupHandleView() {
 
         leftHandleView.isUserInteractionEnabled = true
-        leftHandleView.layer.cornerRadius = 2.0
+        leftHandleView.roundCorners([.topLeft, .bottomLeft], radius: 10)
+
         leftHandleView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(leftHandleView)
-
-        leftHandleView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+        leftHandleView.heightAnchor.constraint(equalToConstant: handleHeight).isActive = true
         leftHandleView.widthAnchor.constraint(equalToConstant: handleWidth).isActive = true
         leftHandleView.leftAnchor.constraint(equalTo: trimView.leftAnchor).isActive = true
         leftHandleView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
 
-        leftHandleKnob.translatesAutoresizingMaskIntoConstraints = false
-        leftHandleView.addSubview(leftHandleKnob)
+        //Left Knob 1
+        leftHandleKnob1.translatesAutoresizingMaskIntoConstraints = false
+        leftHandleView.addSubview(leftHandleKnob1)
+        leftHandleKnob1.heightAnchor.constraint(equalToConstant: 16).isActive = true
+        leftHandleKnob1.widthAnchor.constraint(equalToConstant: 1).isActive = true
+        leftHandleKnob1.centerYAnchor.constraint(equalTo: leftHandleView.centerYAnchor).isActive = true
+        leftHandleKnob1.centerXAnchor.constraint(equalTo: leftHandleView.centerXAnchor, constant: -2).isActive = true
 
-        leftHandleKnob.heightAnchor.constraint(equalTo: heightAnchor, multiplier: 0.5).isActive = true
-        leftHandleKnob.widthAnchor.constraint(equalToConstant: 2).isActive = true
-        leftHandleKnob.centerYAnchor.constraint(equalTo: leftHandleView.centerYAnchor).isActive = true
-        leftHandleKnob.centerXAnchor.constraint(equalTo: leftHandleView.centerXAnchor).isActive = true
+        //Left Knob 2
+        leftHandleKnob2.translatesAutoresizingMaskIntoConstraints = false
+        leftHandleView.addSubview(leftHandleKnob2)
+        leftHandleKnob2.heightAnchor.constraint(equalToConstant: 16).isActive = true
+        leftHandleKnob2.widthAnchor.constraint(equalToConstant: 1).isActive = true
+        leftHandleKnob2.centerYAnchor.constraint(equalTo: leftHandleView.centerYAnchor).isActive = true
+        leftHandleKnob2.centerXAnchor.constraint(equalTo: leftHandleView.centerXAnchor, constant: 2).isActive = true
 
         rightHandleView.isUserInteractionEnabled = true
-        rightHandleView.layer.cornerRadius = 2.0
+        rightHandleView.roundCorners([.topRight, .bottomRight], radius: 10)
+
         rightHandleView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(rightHandleView)
-
-        rightHandleView.heightAnchor.constraint(equalTo: heightAnchor).isActive = true
+        rightHandleView.heightAnchor.constraint(equalToConstant: handleHeight).isActive = true
         rightHandleView.widthAnchor.constraint(equalToConstant: handleWidth).isActive = true
         rightHandleView.rightAnchor.constraint(equalTo: trimView.rightAnchor).isActive = true
         rightHandleView.centerYAnchor.constraint(equalTo: centerYAnchor).isActive = true
 
-        rightHandleKnob.translatesAutoresizingMaskIntoConstraints = false
-        rightHandleView.addSubview(rightHandleKnob)
+        //Right Knob 1
+        rightHandleKnob1.translatesAutoresizingMaskIntoConstraints = false
+             rightHandleView.addSubview(rightHandleKnob1)
+             rightHandleKnob1.heightAnchor.constraint(equalToConstant: 16).isActive = true
+             rightHandleKnob1.widthAnchor.constraint(equalToConstant: 1).isActive = true
+             rightHandleKnob1.centerYAnchor.constraint(equalTo: rightHandleView.centerYAnchor).isActive = true
+             rightHandleKnob1.centerXAnchor.constraint(equalTo: rightHandleView.centerXAnchor, constant: -2).isActive = true
 
-        rightHandleKnob.heightAnchor.constraint(equalTo: heightAnchor, multiplier: 0.5).isActive = true
-        rightHandleKnob.widthAnchor.constraint(equalToConstant: 2).isActive = true
-        rightHandleKnob.centerYAnchor.constraint(equalTo: rightHandleView.centerYAnchor).isActive = true
-        rightHandleKnob.centerXAnchor.constraint(equalTo: rightHandleView.centerXAnchor).isActive = true
+        //Right Knob 2
+             rightHandleKnob2.translatesAutoresizingMaskIntoConstraints = false
+             rightHandleView.addSubview(rightHandleKnob2)
+             rightHandleKnob2.heightAnchor.constraint(equalToConstant: 16).isActive = true
+             rightHandleKnob2.widthAnchor.constraint(equalToConstant: 1).isActive = true
+             rightHandleKnob2.centerYAnchor.constraint(equalTo: rightHandleView.centerYAnchor).isActive = true
+             rightHandleKnob2.centerXAnchor.constraint(equalTo: rightHandleView.centerXAnchor, constant: 2).isActive = true
     }
 
     private func setupMaskView() {
@@ -216,8 +241,10 @@ public protocol TrimmerViewDelegate: class {
     }
 
     private func updateHandleColor() {
-        leftHandleKnob.backgroundColor = handleColor
-        rightHandleKnob.backgroundColor = handleColor
+        leftHandleKnob1.backgroundColor = UIColor.white
+        leftHandleKnob2.backgroundColor = UIColor.white
+        rightHandleKnob1.backgroundColor = UIColor.white
+        rightHandleKnob2.backgroundColor = UIColor.white
     }
 
     // MARK: - Trim Gestures
